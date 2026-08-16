@@ -1,0 +1,6 @@
+
+> app@1.0.0 preview
+> vite preview --port 8080
+
+  ➜  Local:   http://localhost:8080/
+  ➜  Network: use --host to expose
