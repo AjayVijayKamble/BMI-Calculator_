@@ -1,44 +1,73 @@
-import { BMICategory, ImperialInput, MetricInput } from '../types/bmi.types';
+import { BMI_CATEGORIES } from '../types/bmi.types';
+import type { SystemUnit, BMICategory } from '../types/bmi.types';
 
-export const calculateBMIFromMetric = ({ heightCm, weightKg }: MetricInput): number | null => {
-  if (heightCm <= 0 || weightKg <= 0) return null;
-  const heightM = heightCm / 100;
-  // BMI = weight (kg) / [height (m)]²
-  return Number((weightKg / (heightM * heightM)).toFixed(1));
+/**
+ * Converts height to meters.
+ */
+export const heightToMeters = (height: number, unit: SystemUnit): number => {
+  if (unit === 'metric') {
+    return height / 100;
+  }
+  return height * 0.0254;
 };
 
-export const calculateBMIFromImperial = ({ heightFt, heightIn, weightLbs }: ImperialInput): number | null => {
-  if (heightFt < 0 || heightIn < 0 || weightLbs <= 0) return null;
-  const totalInches = (heightFt * 12) + heightIn;
-  if (totalInches <= 0) return null;
-  const heightCm = totalInches * 2.54;
-  const weightKg = weightLbs * 0.453592;
-  return calculateBMIFromMetric({ heightCm, weightKg });
+/**
+ * Converts weight to kilograms.
+ */
+export const weightToKg = (weight: number, unit: SystemUnit): number => {
+  if (unit === 'metric') {
+    return weight;
+  }
+  return weight * 0.453592;
 };
 
+/**
+ * Calculates BMI using the formula: weight(kg) / (height(m))^2
+ */
+export const calculateBMI = (weightKg: number, heightM: number): number => {
+  if (heightM <= 0 || weightKg <= 0) return 0;
+  const bmi = weightKg / (heightM * heightM);
+  return Math.round(bmi * 10) / 10;
+};
+
+/**
+ * Determines the BMI category based on the BMI value.
+ */
 export const getBMICategory = (bmi: number): BMICategory => {
-  if (bmi < 18.5) return 'Underweight';
-  if (bmi < 25) return 'Normal';
-  if (bmi < 30) return 'Overweight';
-  return 'Obese';
+  const category = BMI_CATEGORIES.find(c => bmi >= c.min && bmi < c.max);
+  if (category) return category;
+  
+  // Handle edge case exactly on the line
+  const exactMatch = BMI_CATEGORIES.find(c => bmi === c.max);
+  if (exactMatch) return exactMatch;
+
+  // Fallback (e.g. extremely high)
+  return BMI_CATEGORIES[BMI_CATEGORIES.length - 1];
 };
 
-export const getCategoryColor = (category: BMICategory): string => {
-  switch (category) {
-    case 'Underweight': return 'text-blue-500';
-    case 'Normal': return 'text-green-500';
-    case 'Overweight': return 'text-yellow-500';
-    case 'Obese': return 'text-red-500';
-    default: return 'text-gray-500';
+/**
+ * Calculates Healthy Weight Range (based on normal BMI of 18.5 - 25)
+ * Returns a tuple of [minWeight, maxWeight] in the appropriate unit.
+ */
+export const calculateHealthyWeightRange = (heightM: number, unit: SystemUnit): [number, number] => {
+  const minWeightKg = 18.5 * (heightM * heightM);
+  const maxWeightKg = 25 * (heightM * heightM);
+
+  if (unit === 'metric') {
+    return [Math.round(minWeightKg * 10) / 10, Math.round(maxWeightKg * 10) / 10];
+  } else {
+    // Convert kg back to lbs
+    const minWeightLbs = minWeightKg / 0.453592;
+    const maxWeightLbs = maxWeightKg / 0.453592;
+    return [Math.round(minWeightLbs * 10) / 10, Math.round(maxWeightLbs * 10) / 10];
   }
 };
 
-export const getCategoryBgColor = (category: BMICategory): string => {
-  switch (category) {
-    case 'Underweight': return 'bg-blue-100';
-    case 'Normal': return 'bg-green-100';
-    case 'Overweight': return 'bg-yellow-100';
-    case 'Obese': return 'bg-red-100';
-    default: return 'bg-gray-100';
-  }
+/**
+ * Calculates Ponderal Index: weight(kg) / height(m)^3
+ */
+export const calculatePonderalIndex = (weightKg: number, heightM: number): number => {
+  if (heightM <= 0 || weightKg <= 0) return 0;
+  const pi = weightKg / (heightM * heightM * heightM);
+  return Math.round(pi * 100) / 100;
 };

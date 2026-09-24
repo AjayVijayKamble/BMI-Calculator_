@@ -1,125 +1,195 @@
-
-import { UnitSystem } from '../types/bmi.types';
-import { UnitToggle } from './UnitToggle';
+import React, { useEffect, useState } from 'react';
+import type { BMIInput } from '../types/bmi.types';
 
 interface BMIFormProps {
-  unitSystem: UnitSystem;
-  setUnitSystem: (u: UnitSystem) => void;
-  metricInputs: {
-    heightCm: string;
-    setHeightCm: (v: string) => void;
-    weightKg: string;
-    setWeightKg: (v: string) => void;
-  };
-  imperialInputs: {
-    heightFt: string;
-    setHeightFt: (v: string) => void;
-    heightIn: string;
-    setHeightIn: (v: string) => void;
-    weightLbs: string;
-    setWeightLbs: (v: string) => void;
-  };
+  input: BMIInput;
+  onChange: React.Dispatch<React.SetStateAction<BMIInput>>;
 }
 
-export const BMIForm: React.FC<BMIFormProps> = ({
-  unitSystem,
-  setUnitSystem,
-  metricInputs,
-  imperialInputs
-}) => {
-  return (
-    <form className="w-full" onSubmit={(e) => e.preventDefault()}>
-      <UnitToggle unitSystem={unitSystem} onChange={setUnitSystem} />
+const BMIForm: React.FC<BMIFormProps> = ({ input, onChange }) => {
+  const isMetric = input.unit === 'metric';
 
-      <div className="space-y-4">
-        {unitSystem === 'metric' ? (
-          <>
-            <div>
-              <label htmlFor="heightCm" className="block text-sm font-medium text-gray-700 mb-1">
-                Height (cm)
-              </label>
-              <input
-                id="heightCm"
-                type="number"
-                min="50"
-                max="300"
-                value={metricInputs.heightCm}
-                onChange={(e) => metricInputs.setHeightCm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 block shadow-sm sm:text-sm"
-                placeholder="e.g. 175"
-                aria-describedby="heightCm-description"
-              />
-              <span id="heightCm-description" className="sr-only">Enter height in centimeters between 50 and 300</span>
+  // Local state for imperial height parsing (feet and inches)
+  const [feet, setFeet] = useState<string>('');
+  const [inches, setInches] = useState<string>('');
+
+  // Sync local imperial state with main input state when switching units
+  useEffect(() => {
+    if (input.unit === 'imperial' && input.height === '') {
+      setFeet('');
+      setInches('');
+    }
+  }, [input.unit, input.height]);
+
+  const handleHeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...input, height: e.target.value });
+  };
+
+  const handleImperialHeightChange = (type: 'feet' | 'inches', value: string) => {
+    const parsedValue = value.replace(/[^0-9.]/g, '');
+    let newFeet = feet;
+    let newInches = inches;
+
+    if (type === 'feet') {
+      newFeet = parsedValue;
+      setFeet(newFeet);
+    } else {
+      newInches = parsedValue;
+      setInches(newInches);
+    }
+
+    const totalInches = (parseFloat(newFeet || '0') * 12) + parseFloat(newInches || '0');
+    onChange({ ...input, height: totalInches > 0 ? totalInches.toString() : '' });
+  };
+
+  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...input, weight: e.target.value });
+  };
+
+  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange({ ...input, age: e.target.value });
+  };
+
+  const handleGenderChange = (gender: 'male' | 'female') => {
+    onChange({ ...input, gender });
+  };
+
+  return (
+    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+      <div className="grid grid-cols-2 gap-4">
+        {/* Age Input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Age
+          </label>
+          <div className="relative rounded-md shadow-sm">
+            <input
+              type="number"
+              min="2"
+              max="120"
+              value={input.age}
+              onChange={handleAgeChange}
+              className="block w-full rounded-md border-gray-300 pl-4 pr-12 py-3 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+              placeholder="e.g. 25"
+              aria-label="Age"
+            />
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <span className="text-gray-500 sm:text-sm">yrs</span>
             </div>
-            <div>
-              <label htmlFor="weightKg" className="block text-sm font-medium text-gray-700 mb-1">
-                Weight (kg)
-              </label>
-              <input
-                id="weightKg"
-                type="number"
-                min="2"
-                max="500"
-                value={metricInputs.weightKg}
-                onChange={(e) => metricInputs.setWeightKg(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 block shadow-sm sm:text-sm"
-                placeholder="e.g. 70"
-                aria-describedby="weightKg-description"
-              />
-              <span id="weightKg-description" className="sr-only">Enter weight in kilograms between 2 and 500</span>
+          </div>
+        </div>
+
+        {/* Gender Input */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Gender
+          </label>
+          <div className="flex bg-gray-50 p-1 rounded-md border border-gray-200 h-[46px]">
+            <button
+              type="button"
+              onClick={() => handleGenderChange('male')}
+              className={`flex-1 rounded text-sm font-medium transition-colors ${
+                input.gender === 'male' ? 'bg-white text-blue-600 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Male
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGenderChange('female')}
+              className={`flex-1 rounded text-sm font-medium transition-colors ${
+                input.gender === 'female' ? 'bg-white text-pink-600 shadow-sm border border-gray-200' : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Female
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Height Input */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Height
+        </label>
+        {isMetric ? (
+          <div className="relative rounded-md shadow-sm">
+            <input
+              type="number"
+              min="50"
+              max="300"
+              step="any"
+              value={input.height}
+              onChange={handleHeightChange}
+              className="block w-full rounded-md border-gray-300 pl-4 pr-12 py-3 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+              placeholder="e.g. 175"
+              aria-label="Height in centimeters"
+            />
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+              <span className="text-gray-500 sm:text-sm">cm</span>
             </div>
-          </>
+          </div>
         ) : (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Height (ft & in)
-              </label>
-              <div className="flex space-x-2">
-                <input
-                  id="heightFt"
-                  type="number"
-                  min="1"
-                  max="9"
-                  value={imperialInputs.heightFt}
-                  onChange={(e) => imperialInputs.setHeightFt(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 block shadow-sm sm:text-sm"
-                  placeholder="ft"
-                  aria-label="Height in feet"
-                />
-                <input
-                  id="heightIn"
-                  type="number"
-                  min="0"
-                  max="11"
-                  value={imperialInputs.heightIn}
-                  onChange={(e) => imperialInputs.setHeightIn(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 block shadow-sm sm:text-sm"
-                  placeholder="in"
-                  aria-label="Height in inches"
-                />
+          <div className="flex space-x-4">
+            <div className="relative rounded-md shadow-sm flex-1">
+              <input
+                type="number"
+                min="1"
+                max="9"
+                value={feet}
+                onChange={(e) => handleImperialHeightChange('feet', e.target.value)}
+                className="block w-full rounded-md border-gray-300 pl-4 pr-10 py-3 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+                placeholder="e.g. 5"
+                aria-label="Height in feet"
+              />
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <span className="text-gray-500 sm:text-sm">ft</span>
               </div>
             </div>
-            <div>
-              <label htmlFor="weightLbs" className="block text-sm font-medium text-gray-700 mb-1">
-                Weight (lbs)
-              </label>
+            <div className="relative rounded-md shadow-sm flex-1">
               <input
-                id="weightLbs"
                 type="number"
-                min="4"
-                max="1102"
-                value={imperialInputs.weightLbs}
-                onChange={(e) => imperialInputs.setWeightLbs(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 block shadow-sm sm:text-sm"
-                placeholder="e.g. 150"
-                aria-describedby="weightLbs-description"
+                min="0"
+                max="11"
+                step="any"
+                value={inches}
+                onChange={(e) => handleImperialHeightChange('inches', e.target.value)}
+                className="block w-full rounded-md border-gray-300 pl-4 pr-10 py-3 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+                placeholder="e.g. 9"
+                aria-label="Height in inches"
               />
-              <span id="weightLbs-description" className="sr-only">Enter weight in pounds</span>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <span className="text-gray-500 sm:text-sm">in</span>
+              </div>
             </div>
-          </>
+          </div>
         )}
+      </div>
+
+      {/* Weight Input */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Weight
+        </label>
+        <div className="relative rounded-md shadow-sm">
+          <input
+            type="number"
+            min={isMetric ? "2" : "4"}
+            max={isMetric ? "500" : "1100"}
+            step="any"
+            value={input.weight}
+            onChange={handleWeightChange}
+            className="block w-full rounded-md border-gray-300 pl-4 pr-12 py-3 focus:border-blue-500 focus:ring-blue-500 sm:text-sm border"
+            placeholder={isMetric ? "e.g. 70" : "e.g. 150"}
+            aria-label={`Weight in ${isMetric ? 'kilograms' : 'pounds'}`}
+          />
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <span className="text-gray-500 sm:text-sm">{isMetric ? 'kg' : 'lbs'}</span>
+          </div>
+        </div>
       </div>
     </form>
   );
 };
+
+export default BMIForm;

@@ -1,53 +1,82 @@
 # BMI Calculator
 
-A lightweight, client-side BMI (Body Mass Index) calculator built with React, TypeScript, and Tailwind CSS. Supports both Metric and Imperial units, with real-time validation and category classification.
+A fast, client-side BMI (Body Mass Index) calculator built with React, TypeScript, Vite and Tailwind CSS. It calculates as you type, works in Metric or Imperial units, and shows where your result sits on a color-coded scale.
+
+**Live demo:** https://ajayvijaykamble.github.io/BMI-Calculator_/
+
+## Screenshots
+
+| Desktop (Metric) | Mobile (Imperial) |
+|---|---|
+| ![BMI Calculator showing a Normal result of 22.9 in metric units](docs/screenshots/result-metric.png) | ![BMI Calculator on mobile showing an Overweight result of 28.1 in imperial units](docs/screenshots/result-imperial-mobile.png) |
+
+## Features
+
+- **Real-time calculation**: BMI updates as you type, with no submit button.
+- **Metric and Imperial units**: cm / kg, or ft + in / lbs.
+- **Age and gender inputs**: shows a note for users under 20, where adult BMI categories are less reliable.
+- **8-tier WHO classification**, from Severe Thinness to Obese Class III, color-coded.
+- **Visual BMI scale** with a marker showing where your result falls (15–40).
+- **Healthy weight range** for your height (BMI 18.5–25), shown in your chosen unit.
+- **Ponderal Index** (kg/m³) as an additional body-shape metric.
+- **Responsive** layout for mobile and desktop.
+- **Private**: runs entirely in the browser. Nothing is stored or sent anywhere.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | React 18 |
+| Framework | React 19 |
 | Language | TypeScript |
-| Build Tool | Vite |
+| Build tool | Vite |
 | Styling | Tailwind CSS |
-| Package Manager | npm |
-| Backend | None (fully client-side) |
+| Linting | Oxlint |
+| Hosting | GitHub Pages (via GitHub Actions) |
 
-## Features
+## BMI Formula & Categories
 
-- Toggle between Metric (cm / kg) and Imperial (ft-in / lbs) units
-- Input validation with sensible min/max ranges
-- Instant BMI calculation with one-decimal precision
-- Color-coded BMI category display (Underweight, Normal, Overweight, Obese)
-- Responsive layout (mobile-first, 320px+)
-- Accessible form controls (labels, ARIA attributes, keyboard navigation)
+```
+BMI            = weight (kg) / height (m)²
+Ponderal Index = weight (kg) / height (m)³
+```
+
+Imperial inputs are converted to metric before calculation.
+
+| Category | BMI Range |
+|---|---|
+| Severe Thinness | < 16 |
+| Moderate Thinness | 16 – 17 |
+| Mild Thinness | 17 – 18.5 |
+| Normal | 18.5 – 25 |
+| Overweight | 25 – 30 |
+| Obese Class I | 30 – 35 |
+| Obese Class II | 35 – 40 |
+| Obese Class III | ≥ 40 |
 
 ## Project Structure
 
 ```
 bmi-calculator/
+├── .github/workflows/deploy.yml   # Builds and deploys to GitHub Pages
+├── docs/screenshots/              # README screenshots
 ├── public/
-│   └── favicon.svg
 ├── src/
 │   ├── components/
-│   │   ├── BMIForm.tsx          # Input form (height, weight, unit toggle)
-│   │   ├── BMIResult.tsx        # Displays calculated BMI + category
-│   │   └── UnitToggle.tsx       # Metric/Imperial switch
+│   │   ├── BMIForm.tsx            # Age, gender, height and weight inputs
+│   │   ├── BMIResult.tsx          # BMI value, category, scale and extra metrics
+│   │   └── UnitToggle.tsx         # Metric / Imperial switch
 │   ├── hooks/
-│   │   └── useBMICalculator.ts  # Custom hook housing BMI calc logic
-│   ├── utils/
-│   │   └── bmiUtils.ts          # Pure functions: calculateBMI, getBMICategory, unit conversions
+│   │   └── useBMICalculator.ts    # State and calculation logic
 │   ├── types/
-│   │   └── bmi.types.ts         # TypeScript interfaces
+│   │   └── bmi.types.ts           # Types and BMI category definitions
+│   ├── utils/
+│   │   └── bmiUtils.ts            # Pure functions: BMI, category, conversions, ranges
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css
-├── .eslintrc.cjs
 ├── index.html
 ├── package.json
-├── postcss.config.js
 ├── tailwind.config.js
-├── tsconfig.json
 └── vite.config.ts
 ```
 
@@ -55,67 +84,36 @@ bmi-calculator/
 
 ### Prerequisites
 
-- Node.js 18+ and npm installed
+- Node.js 20+ and npm
 
-### Installation
+### Install and run
 
 ```bash
-# Clone or navigate into the project folder
-cd bmi-calculator
-
-# Install dependencies
+git clone https://github.com/AjayVijayKamble/BMI-Calculator_.git
+cd BMI-Calculator_
 npm install
-```
-
-### Development
-
-```bash
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+Open the URL Vite prints (by default http://localhost:5173/BMI-Calculator_/).
 
-### Build for Production
-
-```bash
-npm run build
-npm run preview   # preview the production build locally
-```
-
-### Lint
+### Other scripts
 
 ```bash
-npm run lint
+npm run build     # Type-check and build to dist/
+npm run preview   # Serve the production build locally
+npm run lint      # Run Oxlint
 ```
 
-## BMI Formula & Categories
+## Deployment
 
-BMI is calculated as:
+Every push to `main` triggers the [Deploy to GitHub Pages](.github/workflows/deploy.yml) workflow, which builds the app and publishes `dist/` to GitHub Pages.
 
-```
-BMI = weight (kg) / [height (m)]²
-```
+The site is served from the `/BMI-Calculator_/` sub-path, which is set by `base` in [vite.config.ts](vite.config.ts). If you fork or rename the repository, update `base` to match the new repository name.
 
-For imperial inputs, height and weight are converted to metric before calculation.
+## Disclaimer
 
-| Category | BMI Range |
-|---|---|
-| Underweight | < 18.5 |
-| Normal weight | 18.5 – 24.9 |
-| Overweight | 25.0 – 29.9 |
-| Obese | ≥ 30.0 |
-
-## Validation Rules
-
-| Field | Metric Range | Imperial Range |
-|---|---|---|
-| Height | 50 – 300 cm | ~1'8" – 9'10" |
-| Weight | 2 – 500 kg | ~4.4 – 1102 lbs |
-
-## Notes
-
-- This tool is for general informational purposes only and does not constitute medical advice.
-- All calculations happen client-side; no user data is stored or transmitted.
+This tool is for general information only and is not medical advice. BMI does not distinguish between muscle and fat, so consult a healthcare professional for a proper health assessment.
 
 ## License
 

@@ -1,44 +1,28 @@
 {
-  "name": "app",
-  "version": "1.0.0",
-  "description": "A lightweight, client-side BMI (Body Mass Index) calculator built with React, TypeScript, and Tailwind CSS. Supports both Metric and Imperial units, with real-time validation and category classification.",
-  "main": "postcss.config.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AjayVijayKamble/BMI-Calculator_Jules.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "name": "bmi-calculator",
+  "private": true,
+  "version": "0.0.0",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/AjayVijayKamble/BMI-Calculator_Jules/issues"
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
   },
-  "homepage": "https://github.com/AjayVijayKamble/BMI-Calculator_Jules#readme",
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@typescript-eslint/eslint-plugin": "^8.67.0",
-    "@typescript-eslint/parser": "^8.67.0",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.4",
     "autoprefixer": "^10.5.4",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.4.19",
+    "oxlint": "^1.75.0",
     "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19",
-    "typescript": "^6.0.3",
-    "vite": "^8.2.1"
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0"
   }
 }
